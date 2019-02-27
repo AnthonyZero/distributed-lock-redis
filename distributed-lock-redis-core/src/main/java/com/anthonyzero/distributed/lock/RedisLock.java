@@ -7,6 +7,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.time.LocalTime;
+import java.util.Collections;
 
 /**
  * redis分布式锁
@@ -44,6 +45,12 @@ public class RedisLock {
         this.renewalScript = FileUtil.getLuaScript("renewal.lua");
     }
 
+    /**
+     * 加锁
+     * @param key 键
+     * @param request 客户端唯一标识（代表是谁获取了锁）
+     * @return
+     */
     public boolean lock(String key, String request) {
         Jedis jedis = null;
         try {
@@ -62,6 +69,37 @@ public class RedisLock {
             }
         } catch (Exception ex) {
             logger.error("lock error");
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 释放锁
+     * @param key 键
+     * @param request 获取锁的客户端的唯一标识
+     * @return
+     */
+    public boolean unlock(String key, String request) {
+        Jedis jedis = null;
+        try {
+            if (openRenewal) {
+                //停止续期
+            }
+            jedis = jedisPool.getResource();
+            Object result = jedis.eval(unlockScript, Collections.singletonList(key), Collections.singletonList(request));
+            if (UNLOCK_SUCCESS_MSG.equals(result)) {
+                logger.info("线程id:"+Thread.currentThread().getId() + "释放锁成功!时间:"+ LocalTime.now());
+                return true;
+            } else {
+                logger.info("线程id:"+Thread.currentThread().getId() + "释放锁失败,时间:"+ LocalTime.now());
+                return false;
+            }
+        } catch (Exception ex) {
+            logger.error("unlock error");
         } finally {
             if (jedis != null) {
                 jedis.close();
