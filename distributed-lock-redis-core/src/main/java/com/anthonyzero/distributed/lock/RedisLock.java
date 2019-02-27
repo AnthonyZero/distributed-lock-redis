@@ -3,7 +3,10 @@ package com.anthonyzero.distributed.lock;
 import com.anthonyzero.distributed.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+
+import java.time.LocalTime;
 
 /**
  * redis分布式锁
@@ -38,9 +41,34 @@ public class RedisLock {
         this.openRenewal = builder.openRenewal;
         this.renewalPercentage = builder.renewalPercentage;
         this.unlockScript = FileUtil.getLuaScript("unlock.lua");
+        this.renewalScript = FileUtil.getLuaScript("renewal.lua");
     }
 
+    public boolean lock(String key, String request) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            String result = jedis.set(key, request, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime * TIME);
+            if (LOCK_SUCCESS_MSG.equals(result)) {
+                logger.info("线程id:"+Thread.currentThread().getId() + "加锁成功!时间:"+ LocalTime.now());
 
+                if (openRenewal) {
+                    //开启后台线程续期
+                }
+                return true;
+            } else {
+                logger.info("线程id:"+Thread.currentThread().getId() + "获取锁失败,时间:"+ LocalTime.now());
+                return false;
+            }
+        } catch (Exception ex) {
+            logger.error("lock error");
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
+        }
+        return false;
+    }
 
 
     public static class Builder {
@@ -62,16 +90,31 @@ public class RedisLock {
             this.jedisPool = jedisPool;
         }
 
+        /**
+         * 是否开启守护后台线程 自动续期
+         * @param openRenewal
+         * @return
+         */
         public Builder openRenewal(boolean openRenewal) {
             this.openRenewal = openRenewal;
             return this;
         }
 
+        /**
+         * 每次续期的时间占过期时间的比例
+         * @param renewalPercentage
+         * @return
+         */
         public Builder renewalPercentage(double renewalPercentage) {
             this.renewalPercentage = renewalPercentage;
             return this;
         }
 
+        /**
+         * 设置过期时间
+         * @param expireTime
+         * @return
+         */
         public Builder expireTime(int expireTime) {
             this.expireTime = expireTime;
             return this;
