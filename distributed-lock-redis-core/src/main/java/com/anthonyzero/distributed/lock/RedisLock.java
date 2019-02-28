@@ -86,9 +86,6 @@ public class RedisLock {
     public boolean unlock(String key, String request) {
         Jedis jedis = null;
         try {
-            if (openRenewal) {
-                //停止续期
-            }
             jedis = jedisPool.getResource();
             Object result = jedis.eval(unlockScript, Collections.singletonList(key), Collections.singletonList(request));
             if (UNLOCK_SUCCESS_MSG.equals(result)) {
@@ -103,6 +100,9 @@ public class RedisLock {
         } finally {
             if (jedis != null) {
                 jedis.close();
+            }
+            if (openRenewal) {
+                //停止续期
             }
         }
         return false;
@@ -139,7 +139,7 @@ public class RedisLock {
         }
 
         /**
-         * 每次续期的时间占过期时间的比例
+         * 每次续期的时间占过期时间的比例 0到1的范围
          * @param renewalPercentage
          * @return
          */
