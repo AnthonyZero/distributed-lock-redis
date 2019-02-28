@@ -1,5 +1,6 @@
 package com.anthonyzero.distributed.lock;
 
+import com.anthonyzero.distributed.expire.ExpirationRenewalProcessor;
 import com.anthonyzero.distributed.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,9 @@ public class RedisLock {
     private double renewalPercentage;
     //过期时间
     private int expireTime;
+    //后台守护线程
+    private Thread daemonThread;
+    private ExpirationRenewalProcessor processor;
 
     private RedisLock(Builder builder) {
         this.jedisPool = builder.jedisPool;
@@ -43,6 +47,16 @@ public class RedisLock {
         this.renewalPercentage = builder.renewalPercentage;
         this.unlockScript = FileUtil.getLuaScript("unlock.lua");
         this.renewalScript = FileUtil.getLuaScript("renewal.lua");
+    }
+
+    /**
+     * 开启守护线程 定时刷新
+     */
+    private void scheduleExpirationRenewal(ExpirationRenewalProcessor processor){
+        this.processor = processor;
+        this.daemonThread = new Thread(processor);
+        this.daemonThread.setDaemon(true);
+        this.daemonThread.start();
     }
 
     /**
@@ -59,8 +73,12 @@ public class RedisLock {
             if (LOCK_SUCCESS_MSG.equals(result)) {
                 logger.info("Thread id:"+Thread.currentThread().getId() + "lock success!Time:"+ LocalTime.now());
 
+                //开启后台线程
                 if (openRenewal) {
-                    //开启后台线程续期
+                    long sleepTime = (long)(expireTime*TIME*renewalPercentage);
+                    ExpirationRenewalProcessor processor = new ExpirationRenewalProcessor(jedisPool.getResource(),renewalScript, key,
+                                request, expireTime*TIME, sleepTime);
+                    scheduleExpirationRenewal(processor);
                 }
                 return true;
             } else {
