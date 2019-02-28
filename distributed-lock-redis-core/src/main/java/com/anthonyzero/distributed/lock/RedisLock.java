@@ -57,14 +57,14 @@ public class RedisLock {
             jedis = jedisPool.getResource();
             String result = jedis.set(key, request, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime * TIME);
             if (LOCK_SUCCESS_MSG.equals(result)) {
-                logger.info("线程id:"+Thread.currentThread().getId() + "加锁成功!时间:"+ LocalTime.now());
+                logger.info("Thread id:"+Thread.currentThread().getId() + "lock success!Time:"+ LocalTime.now());
 
                 if (openRenewal) {
                     //开启后台线程续期
                 }
                 return true;
             } else {
-                logger.info("线程id:"+Thread.currentThread().getId() + "获取锁失败,时间:"+ LocalTime.now());
+                logger.info("Thread id:"+Thread.currentThread().getId() + "lock fail,Time:"+ LocalTime.now());
                 return false;
             }
         } catch (Exception ex) {
@@ -89,10 +89,10 @@ public class RedisLock {
             jedis = jedisPool.getResource();
             Object result = jedis.eval(unlockScript, Collections.singletonList(key), Collections.singletonList(request));
             if (UNLOCK_SUCCESS_MSG.equals(result)) {
-                logger.info("线程id:"+Thread.currentThread().getId() + "释放锁成功!时间:"+ LocalTime.now());
+                logger.info("Thread id:"+Thread.currentThread().getId() + "unlock success!Time:"+ LocalTime.now());
                 return true;
             } else {
-                logger.info("线程id:"+Thread.currentThread().getId() + "释放锁失败,时间:"+ LocalTime.now());
+                logger.info("Thread id:"+Thread.currentThread().getId() + "unlock fail,Time:"+ LocalTime.now());
                 return false;
             }
         } catch (Exception ex) {
