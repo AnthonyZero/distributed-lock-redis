@@ -119,8 +119,10 @@ public class RedisLock {
             if (jedis != null) {
                 jedis.close();
             }
-            if (openRenewal) {
+            if (openRenewal && processor != null) {
                 //停止续期
+                processor.stop();
+                daemonThread.interrupt();
             }
         }
         return false;
