@@ -7,6 +7,10 @@
     <groupId>com.anthonyzero</groupId>
     <artifactId>distributed-lock-redis-core</artifactId>
     <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Distributed lock redis</name>
+    <description>Distributed lock based on redis</description>
 
     <properties>
         <slf4j.version>1.7.7</slf4j.version>
