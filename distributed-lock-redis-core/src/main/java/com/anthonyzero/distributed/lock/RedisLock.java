@@ -60,12 +60,23 @@ public class RedisLock {
     }
 
     /**
-     * 加锁
+     * 加锁（默认过期时间）
      * @param key 键
      * @param request 客户端唯一标识（代表是谁获取了锁）
      * @return
      */
     public boolean lock(String key, String request) {
+       return lock(key, request, this.expireTime);
+    }
+
+    /**
+     * 加锁（自定义过期时间）
+     * @param key  键
+     * @param request 客户端唯一标识（代表是谁获取了锁）
+     * @param expireTime 过期时间（秒为单位）
+     * @return
+     */
+    public boolean lock(String key, String request, int expireTime) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -75,9 +86,9 @@ public class RedisLock {
 
                 //开启后台线程
                 if (openRenewal) {
-                    long sleepTime = (long)(expireTime*TIME*renewalPercentage);
+                    long sleepTime = (long)(expireTime * TIME * renewalPercentage);
                     ExpirationRenewalProcessor processor = new ExpirationRenewalProcessor(jedisPool.getResource(),renewalScript, key,
-                                request, expireTime*TIME, sleepTime);
+                            request, expireTime*TIME, sleepTime);
                     scheduleExpirationRenewal(processor);
                 }
                 return true;
