@@ -15,7 +15,7 @@ public class Application {
         ConfigurableApplicationContext applicationContext =
                 SpringApplication.run(Application.class, args);
 
-        //分布式锁（开启自动续期）
+        //获取分布式锁（开启自动续期）
         RedisLock redisLock = (RedisLock) applicationContext.getBean("renewalLock");
         ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 900,
                 1, TimeUnit.SECONDS, new SynchronousQueue<>());
@@ -38,7 +38,7 @@ public class Application {
     private static void executorTask(RedisLock redisLock) throws InterruptedException {
         String key = "key";
         String request = UUID.randomUUID().toString();
-        boolean flag = redisLock.lock("key", request, 3);
+        boolean flag = redisLock.lock(key, request, 3);
         if (flag) {
             try {
                 //do somethings

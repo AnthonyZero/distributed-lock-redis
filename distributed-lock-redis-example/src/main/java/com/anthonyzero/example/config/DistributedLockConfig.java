@@ -36,9 +36,9 @@ public class DistributedLockConfig {
     @Bean(name = "renewalLock")
     public RedisLock openRenewalBuild() {
         RedisLock redisLock = new RedisLock.Builder(jedisPool)
-                .expireTime(60) //设置过期时间
+                .expireTime(60) //设置过期时间 默认为60秒
                 .openRenewal(true) //开启守护线程续期 默认不开启
-                .renewalPercentage(0.5) //每次续期的时间占过期时间的比例 0到1的范围
+                .renewalPercentage(0.5) //每次续期的时间占过期时间的比例 0到1的范围(默认为0.6)
                 .build();
         return redisLock;
     }
