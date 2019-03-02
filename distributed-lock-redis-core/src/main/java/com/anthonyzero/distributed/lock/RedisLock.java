@@ -82,7 +82,7 @@ public class RedisLock {
             jedis = jedisPool.getResource();
             String result = jedis.set(key, request, SET_IF_NOT_EXIST, SET_WITH_EXPIRE_TIME, expireTime * TIME);
             if (LOCK_SUCCESS_MSG.equals(result)) {
-                logger.info("Thread id:"+Thread.currentThread().getId() + "lock success!Time:"+ LocalTime.now());
+                logger.info("Thread id:"+Thread.currentThread().getId() + " lock success!Time:"+ LocalTime.now());
 
                 //开启后台线程
                 if (openRenewal) {
@@ -93,7 +93,7 @@ public class RedisLock {
                 }
                 return true;
             } else {
-                logger.info("Thread id:"+Thread.currentThread().getId() + "lock fail,Time:"+ LocalTime.now());
+                logger.info("Thread id:"+Thread.currentThread().getId() + " lock fail,Time:"+ LocalTime.now());
                 return false;
             }
         } catch (Exception ex) {
@@ -118,10 +118,10 @@ public class RedisLock {
             jedis = jedisPool.getResource();
             Object result = jedis.eval(unlockScript, Collections.singletonList(key), Collections.singletonList(request));
             if (UNLOCK_SUCCESS_MSG.equals(result)) {
-                logger.info("Thread id:"+Thread.currentThread().getId() + "unlock success!Time:"+ LocalTime.now());
+                logger.info("Thread id:"+Thread.currentThread().getId() + " unlock success!Time:"+ LocalTime.now());
                 return true;
             } else {
-                logger.info("Thread id:"+Thread.currentThread().getId() + "unlock fail,Time:"+ LocalTime.now());
+                logger.info("Thread id:"+Thread.currentThread().getId() + " unlock fail,Time:"+ LocalTime.now());
                 return false;
             }
         } catch (Exception ex) {
