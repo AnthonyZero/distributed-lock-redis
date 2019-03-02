@@ -38,7 +38,7 @@ public class DistributedLockConfig {
         RedisLock redisLock = new RedisLock.Builder(jedisPool)
                 .expireTime(60) //设置过期时间
                 .openRenewal(true) //开启守护线程续期 默认不开启
-                .renewalPercentage(0.8) //每次续期的时间占过期时间的比例 0到1的范围
+                .renewalPercentage(0.5) //每次续期的时间占过期时间的比例 0到1的范围
                 .build();
         return redisLock;
     }
