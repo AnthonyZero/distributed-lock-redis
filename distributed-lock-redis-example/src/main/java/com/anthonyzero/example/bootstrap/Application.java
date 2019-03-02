@@ -17,9 +17,9 @@ public class Application {
 
         //分布式锁（开启自动续期）
         RedisLock redisLock = (RedisLock) applicationContext.getBean("renewalLock");
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 1000,
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 900,
                 1, TimeUnit.SECONDS, new SynchronousQueue<>());
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 900; i++) {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -38,11 +38,11 @@ public class Application {
     private static void executorTask(RedisLock redisLock) throws InterruptedException {
         String key = "key";
         String request = UUID.randomUUID().toString();
-        boolean flag = redisLock.lock("key", request, 5);
+        boolean flag = redisLock.lock("key", request, 3);
         if (flag) {
             try {
                 //do somethings
-                Thread.sleep(3 * 1000);
+                Thread.sleep(2 * 1000);
             } finally {
                 redisLock.unlock(key, request);
             }
