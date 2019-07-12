@@ -96,4 +96,4 @@ public class DistributedLockConfig {
 
 ## 资料
 
-博客文章说明[Redis分布式锁](https://anthonyzero.github.io/2019/03/02/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/#more)
+博客文章说明[Redis分布式锁](https://anthonyzero.github.io/2019/03/03/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/#more)
